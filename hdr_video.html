@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDR视频文件播放测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .video-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        #videoPlayer {
+            width: 100%;
+            display: block;
+            background-color: #000;
+            border-radius: 4px;
+        }
+        
+        .video-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .video-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .video-details {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .controls-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .file-list {
+            list-style-type: none;
+            margin-bottom: 20px;
+        }
+        
+        .file-item {
+            padding: 12px 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #eee;
+        }
+        
+        .file-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .file-item.active {
+            background-color: #e6f7ff;
+            border-color: #91d5ff;
+        }
+        
+        .file-name {
+            font-weight: 500;
+        }
+        
+        .file-size {
+            color: #888;
+            font-size: 13px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        
+        .status.info {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #1890ff;
+        }
+        
+        .status.error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HDR视频文件播放测试</h1>
+            <p class="subtitle">选择测试文件, 检查HDR视频播放功能</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="video-container">
+                <video id="videoPlayer" controls>
+                    您的浏览器不支持 HTML5 视频播放
+                </video>
+                
+                <div class="video-info">
+                    <div class="video-title" id="currentVideoTitle">未选择视频</div>
+                    <div class="video-details">
+                        状态: <span id="videoStatus">等待中</span> | 
+                        分辨率: <span id="videoResolution">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls-container">
+                <h2>测试视频文件</h2>
+                <p style="margin-bottom: 15px; color: #666;">从列表中选择一个测试视频：</p>
+                
+                <ul class="file-list" id="videoFileList">
+                    <!-- 测试文件列表将由JavaScript动态生成 -->
+                </ul>
+                
+                <div class="buttons">
+                    <button id="prevBtn" class="btn btn-secondary">上一个</button>
+                    <button id="selectBtn" class="btn btn-primary">播放选中文件</button>
+                    <button id="nextBtn" class="btn btn-secondary">下一个</button>
+                </div>
+                
+                <div id="statusMessage" class="status"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>本地视频播放测试工具 | 此工具仅在浏览器中运行，不会上传视频文件</p>
+        </footer>
+    </div>
+
+    <script>
+        // 预定义的测试视频文件列表
+        const testVideos = [
+            {
+                id: 1,
+                name: "HDR10_Main10_L5",
+                url: "./HDR10_Main10_L5.mp4",
+            },
+            {
+                id: 2,
+                name: "Main10_Sample",
+                url: "./Main10_Sample.mp4",
+            },
+            {
+                id: 3,
+                name: "static_vivid",
+                url: "./static_vivid.mp4",
+            },
+            {
+                id: 4,
+                name: "Vivid_main_L4",
+                url: "./Vivid_main_L4.mp4",
+            },
+            {
+                id: 5,
+                name: "Vivid10_Main10_L6",
+                url: "./Vivid10_Main10_L6.mp4",
+            }
+        ];
+
+        // DOM 元素
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoFileList = document.getElementById('videoFileList');
+        const currentVideoTitle = document.getElementById('currentVideoTitle');
+        const videoStatus = document.getElementById('videoStatus');
+        const videoSize = document.getElementById('videoSize');
+        const videoResolution = document.getElementById('videoResolution');
+        const statusMessage = document.getElementById('statusMessage');
+        const selectBtn = document.getElementById('selectBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // 当前选中的视频索引
+        let currentVideoIndex = 0;
+
+        // 初始化页面
+        function initPage() {
+            renderVideoList();
+            selectVideo(0);
+            setupEventListeners();
+            showStatus("请从列表中选择测试视频", "info");
+        }
+
+        // 渲染视频列表
+        function renderVideoList() {
+            videoFileList.innerHTML = '';
+            
+            testVideos.forEach((video, index) => {
+                const li = document.createElement('li');
+                li.className = `file-item ${index === currentVideoIndex ? 'active' : ''}`;
+                li.dataset.index = index;
+                li.innerHTML = `
+                    <div class="file-name">${video.name}</div>
+                `;
+                
+                li.addEventListener('click', () => selectVideo(index));
+                videoFileList.appendChild(li);
+            });
+        }
+
+        // 选择视频
+        function selectVideo(index) {
+            if (index < 0 || index >= testVideos.length) {
+                return;
+            }
+            
+            currentVideoIndex = index;
+            
+            // 更新列表项的高亮状态
+            document.querySelectorAll('.file-item').forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            const video = testVideos[index];
+            currentVideoTitle.textContent = video.name;
+            videoResolution.textContent = '-';
+            
+            // 设置视频源
+            videoPlayer.src = video.url;
+            showStatus(`已选择: ${video.name}`, "success");
+            
+            // 更新视频状态
+            videoStatus.textContent = "已加载";
+            
+            // 重置视频
+            videoPlayer.load();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 播放选中文件按钮
+            selectBtn.addEventListener('click', () => {
+                if (videoPlayer.src) {
+                    videoPlayer.play();
+                    showStatus("播放视频中...", "info");
+                } else {
+                    showStatus("请先选择视频文件", "error");
+                }
+            });
+            
+            // 上一个按钮
+            prevBtn.addEventListener('click', () => {
+                let newIndex = currentVideoIndex - 1;
+                if (newIndex < 0) newIndex = testVideos.length - 1;
+                selectVideo(newIndex);
+            });
+            
+            // 下一个按钮
+            nextBtn.addEventListener('click', () => {
+                let newIndex = (currentVideoIndex + 1) % testVideos.length;
+                selectVideo(newIndex);
+            });
+            
+            // 视频事件
+            videoPlayer.addEventListener('loadedmetadata', () => {
+                videoResolution.textContent = `${videoPlayer.videoWidth} × ${videoPlayer.videoHeight}`;
+            });
+            
+            videoPlayer.addEventListener('error', (e) => {
+                showStatus(`视频加载失败: ${getVideoErrorText(videoPlayer.error)}`, "error");
+                videoStatus.textContent = "加载失败";
+            });
+            
+            videoPlayer.addEventListener('play', () => {
+                videoStatus.textContent = "播放中";
+            });
+            
+            videoPlayer.addEventListener('pause', () => {
+                videoStatus.textContent = "已暂停";
+            });
+            
+            videoPlayer.addEventListener('ended', () => {
+                videoStatus.textContent = "播放结束";
+                showStatus("视频播放完毕", "info");
+            });
+        }
+
+        // 显示状态信息
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status ${type} show`;
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        // 获取视频错误信息
+        function getVideoErrorText(error) {
+            if (!error) return "未知错误";
+            
+            switch(error.code) {
+                case MediaError.MEDIA_ERR_ABORTED:
+                    return "播放被中止";
+                case MediaError.MEDIA_ERR_NETWORK:
+                    return "网络错误";
+                case MediaError.MEDIA_ERR_DECODE:
+                    return "视频解码错误";
+                case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                    return "视频格式不支持";
+                default:
+                    return "未知错误";
+            }
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
